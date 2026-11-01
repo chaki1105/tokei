@@ -12,7 +12,7 @@
     <!-- 目標タイムを表示するエリア -->
     <div id="target_disp" style="font-size: 1.5em; font-weight: bold; margin: 10px; color: #333;">「ゲームスタート」を押してお題を出そう！</div>
 
-    ～１難易度～
+    ～難易度～
     <div style="margin: 10px;">
         <label for="difficulty" style="font-weight: bold;">難易度：</label>
         <select id="difficulty" style="font-size: 1em; padding: 4px;">
@@ -131,6 +131,14 @@
                 # 針の位置をリセット
                 min_hand.style.transform = "rotate(0deg)"
                 hour_hand.style.transform = "rotate(0deg)"
+        
+                # 難易度との同期
+                if difficulty == "easy":
+                    min_hand.className = "speed-easy-fast"
+                elif difficulty == "normal":
+                    min_hand.className = "speed-normal-fast"
+                else:
+                    min_hand.className = "speed-hard-fast"
 
                 # 長針を回転スタート
                 min_hand.className = "spinning-fast"
@@ -144,6 +152,14 @@
                 min_hand.style.transform = f"rotate({minute_angle}deg)"
 
                 disp.innerHTML = "次は<b>短針（時）</b>を狙って止めよう！"
+
+                # 短針と同期
+                if difficulty == "easy":
+                    hour_hand.className = "speed-easy-slow"
+                elif difficulty == "normal":
+                    hour_hand.className = "speed-normal-slow"
+                else:
+                    hour_hand.className = "speed-hard-slow"
 
                 # 短針を回転スタート
                 hour_hand.className = "spinning-slow"
