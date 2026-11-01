@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="module" src="https://pyscript.net/releases/2025.8.1/core.js"></script>
+    <title>時計の針を止めようゲーム</title>
+</head>
+<body>
+    <h1>時計の針をとめようゲーム</h1>
+    
+    <!-- 目標タイムを表示するエリア -->
+    <div id="target_disp" style="font-size: 1.5em; font-weight: bold; margin: 10px; color: #333;">「ゲームスタート」を押してスタート</div>
+    
+    <!-- 難易度を選ぶセレクトボックス -->
+    <div style="margin: 10px;">
+        <label for="difficulty" style="font-weight: bold;">難易度：</label>
+        <select id="difficulty" style="font-size: 1em; padding: 4px;">
+            <option value="easy">かんたん</option>
+            <option value="normal" selected>ふつう</option>
+            <option value="hard">むずかしい</option>
+        </select>
+    </div>
+
+    <!-- 操作ボタン -->
+    <div><button mpy-click="start" id="btn">ゲームスタート</button></div>
+
+    <!-- 文字盤・長針・短針を重ねるエリア -->
+    <div id="clock_wrapper">
+        <div id="clock_area">
+            <img id="face" src="tokei.png" alt="文字盤">
+            <img id="minute_hand" src="tyousin2.png" alt="長針">
+            <img id="hour_hand" src="tansin2.png" alt="短針">
+        </div>
+    </div>
+
+    <!-- 結果表示エリア -->
+    <div id="disp" style="font-size: 1.2em; margin-top: 15px; line-height: 1.6;"></div>
+
+    <div id="ranking_area">
+        <h3> ハイスコア TOP5</h3>
+        <ol id="ranking_list" style="text-align: left; margin: 0; padding-left: 20px;">
+            <li style="color: gray;">まだ記録はありません</li>
+        </ol>
+    </div>
+
+    <!-- CSSの定義（ここですべての回転スピードを自由に変えられます！） -->
+    <style>
+        body { 
+            text-align: center; 
+            font-family: sans-serif; 
+            background-color: #f9f9f9; 
+        }
+        
+        #clock_wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        #clock_area {
+            position: relative;
+            width: 350px;
+            height: 350px;
+            overflow: hidden;
+        }
+        
+        #clock_area img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 350px;
+            height: 350px;
+            object-fit: contain;
+        }
+
+        /* 右下に固定表示するランキングのスタイル */
+        #ranking_area {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            background: white;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            width: 200px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            font-size: 0.9em;
+            z-index: 100;
+        }
+
+        #ranking_area h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+            color: #333;
+            text-align: center;
+        }
+
+        /* 回転アニメーションの基本 */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+
+        /* 🟢 【初級のスピード】  */
+        .speed-easy-fast { animation: spin 3.0s linear infinite; } 
+        .speed-easy-slow { animation: spin 3.0s linear infinite; } 
+
+        /* 🟡 【中級のスピード】 ここを変更すると中級の速さが変わります */
+        .speed-normal-fast { animation: spin 1.2s linear infinite; } 
+        .speed-normal-slow { animation: spin 1.2s linear infinite; } 
+
+        /* 🔴 【上級のスピード】 ここを変更すると上級の速さが変わります */
+        .speed-hard-fast { animation: spin 0.4s linear infinite; }
+        .speed-hard-slow { animation: spin 0.4s linear infinite; } 
+    </style>
+
+    <!-- Pythonスクリプトの定義 -->
+    <script type="mpy">
+        import random
+        import math
+        from pyscript import document
+        from js import window
+
+        game_state = 0
+        target_h = 0
+        target_m = 0
+        minute_angle = 0
+        hour_angle = 0
+
+        # スコア保存しておくリスト
+        scores = []
+
+        def start(event):
+            global game_state, target_h, target_m, minute_angle, hour_angle
+
+            btn = document.getElementById("btn")
+            disp = document.getElementById("disp")
+            target_disp = document.getElementById("target_disp")
+            min_hand = document.getElementById("minute_hand")
+            hour_hand = document.getElementById("hour_hand")
+            
+            # セレクトボックスの要素自体を取得し、確実に .value を取り出す
+            diff_select = document.getElementById("difficulty")
+            difficulty = diff_select.value
+
+            if game_state == 0:
+                target_h = random.randint(1, 12)
+                
+                # 難易度によってお題の「分」の難しさを変更
+                if difficulty == "easy":
+                    target_m = random.choice([0, 30])           # 初級：0分か30分
+                elif difficulty == "normal":
+                    target_m = random.choice([0, 15, 30, 45])   # 中級：15分刻み
+                else:
+                    target_m = random.randint(0, 59)            # 上級：1分刻み
+
+                target_disp.innerHTML = f"目標： {target_h}時 {target_m}分 "
+                disp.innerHTML = "まずは<b>長針（分）</b>を狙って止めよう"
+
+                min_hand.style.transform = "rotate(0deg)"
+                hour_hand.style.transform = "rotate(0deg)"
+
+                # 難易度に応じた長針のクラスを確実に適用
+                if difficulty == "easy":
+                    min_hand.className = "speed-easy-fast"
+                elif difficulty == "normal":
+                    min_hand.className = "speed-normal-fast"
+                else:
+                    min_hand.className = "speed-hard-fast"
+
+                btn.innerHTML = "長針を止める"
+                game_state = 1
+
+            elif game_state == 1:
+                minute_angle = get_current_angle(min_hand)
+                min_hand.className = ""
+                min_hand.style.transform = f"rotate({minute_angle}deg)"
+
+                disp.innerHTML = "次は<b>短針（時）</b>を狙って止めよう"
+
+                # 難易度に応じた短針のクラスを確実に適用
+                if difficulty == "easy":
+                    hour_hand.className = "speed-easy-slow"
+                elif difficulty == "normal":
+                    hour_hand.className = "speed-normal-slow"
+                else:
+                    hour_hand.className = "speed-hard-slow"
+
+                btn.innerHTML = "短針を止める"
+                game_state = 2
+
+            elif game_state == 2:
+                hour_angle = get_current_angle(hour_hand)
+                hour_hand.className = ""
+                hour_hand.style.transform = f"rotate({hour_angle}deg)"
+
+                stopped_m = round(minute_angle / 6) % 60
+                stopped_h = int((hour_angle % 360) / 30)
+                if stopped_h == 0:
+                    stopped_h = 12
+
+                m_diff = abs(stopped_m - target_m)
+                h_diff = abs(stopped_h - target_h)
+                if h_diff > 6:
+                    h_diff = 12 - h_diff
+
+                # スコア計算
+                score = 100 - (m_diff * 2) - (h_diff * 15)
+                if score < 0:
+                    score = 0
+
+                # ★追加：スコアをリストに追加して、点数の高い順に並べ替える
+                scores.append(score)
+                scores.sort(reverse=True)
+
+                # TOP5のHTML要素を更新する
+                ranking_list = document.getElementById("ranking_list")
+                html_content = ""
+                # 上位5件だけを取り出す
+                top_scores = scores[:5]
+                for s in top_scores:
+                    html_content += f"<li><b>{s}点</b></li>"
+                ranking_list.innerHTML = html_content
+
+                disp.innerHTML = f"""
+                    <b>結果：{stopped_h}時 {stopped_m}分 で止めました！</b><br>
+                    目標とのズレ → 時の誤差: {h_diff}時間 / 分の誤差: {m_diff}分<br>
+                    <span style="color: #d9534f; font-size: 1.2em;"><b>☆ スコア ☆: {score}点</b></span>
+                """
+                btn.innerHTML = "もう一度遊ぶ"
+                game_state = 0
+
+        def get_current_angle(element):
+            style = window.getComputedStyle(element)
+            transform_val = style.getPropertyValue("transform")
+            if not transform_val or transform_val == "none":
+                return 0
+            values = transform_val.replace("matrix(", "").replace(")", "").split(",")
+            a = float(values[0])
+            b = float(values[1])
+            angle = round(math.atan2(b, a) * (180 / math.pi))
+            if angle < 0:
+                angle += 360
+            return angle
+    </script>
+</body>
+</html>
