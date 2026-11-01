@@ -11,6 +11,16 @@
     
     <!-- 目標タイムを表示するエリア -->
     <div id="target_disp" style="font-size: 1.5em; font-weight: bold; margin: 10px; color: #333;">「ゲームスタート」を押してお題を出そう！</div>
+
+    #難易度追加
+    <div style="margin: 10px;">
+        <label for="difficulty" style="font-weight: bold;">難易度：</label>
+        <select id="difficulty" style="font-size: 1em; padding: 4px;">
+            <option value="easy">かんたん（ゆっくり）</option>
+            <option value="normal" selected>ふつう（ふつう）</option>
+            <option value="hard">むずかしい（高速・1分刻み）</option>
+        </select>
+    </div>
     
     <!-- 操作ボタン -->
     <div><button mpy-click="start" id="btn">ゲームスタート</button></div>
@@ -71,6 +81,19 @@
         .spinning-slow {
             animation: spin 3s linear infinite;
         }
+
+        /* かんたん */
+        .speed-easy-fast { animation: spin 2.0s linear infinite; }
+        .speed-easy-slow { animation: spin 4.5s linear infinite; }
+
+        /* ふつう */
+        .speed-normal-fast { animation: spin 1.2s linear infinite; }
+        .speed-normal-slow { animation: spin 3.0s linear infinite; }
+
+        /* むずかしい */
+        .speed-hard-fast { animation: spin 0.6s linear infinite; }
+        .speed-hard-slow { animation: spin 1.5s linear infinite; }
+    
     </style>
 
     <!-- Pythonスクリプトの定義 -->
