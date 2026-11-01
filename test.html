@@ -7,7 +7,7 @@
     <title>時計ピッタリ止めゲーム</title>
 </head>
 <body>
-    <h1>時計ピッタリ止めゲーム</h1>
+    <h1>時間ぴったりとめようゲーム！！</h1>
     
     <!-- 目標タイムを表示するエリア -->
     <div id="target_disp" style="font-size: 1.5em; font-weight: bold; margin: 10px; color: #333;">「ゲームスタート」を押してお題を出そう！</div>
@@ -24,7 +24,7 @@
         </div>
     </div>
 
-    <!-- 結果表示エリア -->
+    <!-- 結果表示 -->
     <div id="disp" style="font-size: 1.2em; margin-top: 15px; line-height: 1.6;"></div>
 
     <!-- CSSの定義 -->
@@ -96,7 +96,7 @@
             min_hand = document.getElementById("minute_hand")
             hour_hand = document.getElementById("hour_hand")
 
-            # ステップ1：ゲームスタート（目標タイムを決定して長針を回す）
+            # 1：ゲームスタート（目標タイムを決定して長針を回す）
             if game_state == 0:
                 # 1〜12時、分は 0, 15, 30, 45 からランダムにお題を設定
                 target_h = random.randint(1, 12)
@@ -114,7 +114,7 @@
                 btn.innerHTML = "長針をストップ！"
                 game_state = 1
 
-            # ステップ2：長針を止めて、短針を回す
+            # 2：長針を止め短針を回す
             elif game_state == 1:
                 minute_angle = get_current_angle(min_hand)
                 min_hand.className = ""
@@ -127,7 +127,7 @@
                 btn.innerHTML = "短針をとめる！"
                 game_state = 2
 
-            # ステップ3：短針を止めて時間（分・時）に変換して判定
+            # 3：短針を止め時間（分・時）に変換して判定
             elif game_state == 2:
                 hour_angle = get_current_angle(hour_hand)
                 hour_hand.className = ""
@@ -152,7 +152,7 @@
 
                 # 結果表示
                 disp.innerHTML = f"""
-                    <b>結果：{stopped_h}時 {stopped_m}分 で止めました！</b><br>
+                    <b>結果：{stopped_h}時 {stopped_m}分 で止まった！</b><br>
                     目標とのズレ → 時の誤差: {h_diff}時間 / 分の誤差: {m_diff}分
                     <span style="color: #d9534f; font-size: 1.2em;"><b>☆ スコア ☆: {score}点</b></span>
                 """
